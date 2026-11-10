@@ -1,0 +1,224 @@
+---
+import { ui, cases, experience, stack, openSource, education, certs, SITE, casePath, type Lang } from '../data/site';
+import CardMedia from './CardMedia.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = ui[lang];
+const [featured, ...rest] = cases;
+// Retícula de puntos del héroe: 11 x 11 con paso de 40 en un lienzo de 440.
+const dots: { x: number; y: number }[] = [];
+for (let i = 0; i < 11; i++) for (let j = 0; j < 11; j++) dots.push({ x: 20 + i * 40, y: 20 + j * 40 });
+// Los puntos aparecen en onda desde el nodo naranja (260, 60).
+const delay = (d: { x: number; y: number }) => Math.round(Math.hypot(d.x - 260, d.y - 60) * 1.4);
+const words = (s: string) => s.trim().split(/\s+/);
+const [titleA, titleB] = t.heroTitle;
+---
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="status intro" style="--i:0">{t.available}</span>
+        <p class="label intro" style="--i:1">{t.role}</p>
+        <h1 class="h-display hero-title" aria-label={`${titleA}${titleB}`}>
+          <span aria-hidden="true">
+            {words(titleA).map((w, i) => <><span class="w"><span style={`--i:${i}`}>{w}</span></span>{' '}</>)}
+            <span class="accent" style="white-space:nowrap">{words(titleB).map((w, i) => <><span class="w"><span style={`--i:${words(titleA).length + i}`}>{w}</span></span>{i < words(titleB).length - 1 ? ' ' : ''}</>)}</span>
+          </span>
+        </h1>
+        <p class="lead intro" style="--i:6">{t.heroText}</p>
+        <div class="ctas intro" style="--i:7">
+          <a class="btn btn-primary" href="#casos">{t.ctaCases}</a>
+          <a class="btn btn-secondary" href="#contacto">{t.ctaContact}</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <svg class="grid" viewBox="0 0 440 440" aria-hidden="true">
+          {dots.map((d) => <rect class="dot" x={d.x - 2} y={d.y - 2} width="4" height="4" data-x={d.x} data-y={d.y} style={`--d:${delay(d)}ms`} />)}
+          <path class="route" d="M380 440V220H420V100H260V64" pathLength="1" />
+          <rect class="node-ping" x="256" y="56" width="8" height="8" />
+          <rect class="node" x="256" y="56" width="8" height="8" />
+        </svg>
+        <img class="hero-photo intro" style="--i:2" src="/david-graciano.webp" width="480" height="480" alt={t.photoAlt} fetchpriority="high" />
+      </div>
+    </div>
+    <div class="metrics">
+      {t.metrics.map((m) => (
+        <div class="metric" data-reveal>
+          <span class="metric-value">{m.value}</span>
+          <span class="metric-label">{m.label}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="casos">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <p class="label">01</p>
+      <h2 class="h2">{t.casesTitle}</h2>
+      <p class="lead">{t.casesIntro}</p>
+    </div>
+    <div class="cases">
+      <a class="case-card featured" href={casePath(featured, lang)} data-reveal>
+        <CardMedia item={featured} lang={lang} seed={0} />
+        <span class="label">{featured.org[lang]}{featured.period && ` · ${featured.period}`}</span>
+        <div class="featured-grid">
+          <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <h3 class="h1">{featured.title[lang]}</h3>
+            <p class="summary">{featured.summary[lang]}</p>
+            <div class="tags">{featured.stack.map((s) => <span class="tag">{s}</span>)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+            <div class="metric">
+              <span class="metric-value">{featured.metrics[0].value[lang]}</span>
+              <span class="metric-label">{featured.metrics[0].label[lang]}</span>
+            </div>
+            <span class="read">{t.readCase} <span class="arr" aria-hidden="true">→</span></span>
+          </div>
+        </div>
+      </a>
+      {rest.map((c, i) => (
+        <a class="case-card" href={casePath(c, lang)} data-reveal>
+          <CardMedia item={c} lang={lang} seed={i + 1} />
+          <span class="label">{c.org[lang]}{c.period && ` · ${c.period}`}</span>
+          <h3 class="h3">{c.title[lang]}</h3>
+          <p class="summary">{c.summary[lang]}</p>
+          <div class="tags">{c.stack.slice(0, 4).map((s) => <span class="tag">{s}</span>)}</div>
+          <div class="metric">
+            <span class="metric-value">{c.metrics[0].value[lang]}</span>
+            <span class="metric-label">{c.metrics[0].label[lang]}</span>
+          </div>
+          <span class="read">{t.readCase} <span class="arr" aria-hidden="true">→</span></span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="experiencia">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <p class="label">02</p>
+      <h2 class="h2">{t.experienceTitle}</h2>
+    </div>
+    <div class="timeline">
+      {experience.map((job) => (
+        <article class="job" data-reveal>
+          <p class="job-period">{job.period[lang]}</p>
+          <div class="job-body">
+            <h3 class="h3">{job.role[lang]}</h3>
+            <p class="job-org">{job.org[lang]}</p>
+            <ul class="bullets">{job.bullets[lang].map((b) => <li>{b}</li>)}</ul>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="stack">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <p class="label">03</p>
+      <h2 class="h2">{t.stackTitle}</h2>
+      <p class="lead">{t.stackIntro}</p>
+    </div>
+    <div class="stack-grid">
+      {stack.map((g) => (
+        <div class="stack-group" data-reveal>
+          <h3 class="label">{g.group[lang]}</h3>
+          <div class="tags">{g.items.map((s) => <span class="tag">{s === 'Geocodificación' && lang === 'en' ? 'Geocoding' : s === 'APIs REST' && lang === 'en' ? 'REST APIs' : s}</span>)}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="codigo">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <p class="label">04</p>
+      <h2 class="h2">{t.openSourceTitle}</h2>
+    </div>
+    <div class="repos">
+      {openSource.map((r) => (
+        <a class="repo" href={r.url} target="_blank" rel="noopener" data-reveal>
+          <span class="repo-name">{r.name}</span>
+          <p class="muted">{r.description[lang]}</p>
+          <span class="tag" style="align-self:flex-start">{r.lang}</span>
+        </a>
+      ))}
+    </div>
+    <p style="margin-top:24px"><a href={SITE.github} target="_blank" rel="noopener">{t.openSourceMore} →</a></p>
+  </div>
+</section>
+
+<section class="section" id="formacion">
+  <div class="wrap">
+    <div class="edu-grid">
+      <div data-reveal>
+        <h2 class="h3" style="margin-bottom:16px">{t.educationTitle}</h2>
+        <ul class="edu-list">
+          {education.map((e) => (
+            <li><span><strong>{e.title[lang]}</strong><br /><span class="org">{e.org}</span></span><span class="year">{e.year}</span></li>
+          ))}
+        </ul>
+      </div>
+      <div data-reveal>
+        <h2 class="h3" style="margin-bottom:16px">{t.certsTitle}</h2>
+        <ul class="edu-list">
+          {certs.map((c) => (
+            <li><span>{c.title[lang]}<br /><span class="org">{c.org}</span></span><span class="year">{c.year}</span></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contacto">
+  <div class="wrap">
+    <div class="contact" data-reveal>
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <p class="label">05</p>
+        <h2 class="h2">{t.contactTitle}</h2>
+        <p class="lead">{t.contactText}</p>
+      </div>
+      <div class="contact-links">
+        <div class="email-row">
+          <span class="email" id="email">{SITE.email}</span>
+        </div>
+        <div class="link-row">
+          <a class="btn btn-primary" href={`mailto:${SITE.email}`}>{t.ctaContact}</a>
+          <button class="btn btn-secondary" type="button" id="copy-email" data-copied={t.copied}>{t.copy}</button>
+        </div>
+        <div class="link-row">
+          <a href={SITE.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+          <span class="muted">·</span>
+          <a href={SITE.github} target="_blank" rel="noopener">GitHub</a>
+          <span class="muted">·</span>
+          <span class="muted">{t.location}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  const btn = document.getElementById('copy-email');
+  btn?.addEventListener('click', async () => {
+    const email = document.getElementById('email')?.textContent ?? '';
+    const original = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(email);
+      btn.textContent = btn.dataset.copied;
+    } catch (e) {
+      const range = document.createRange();
+      range.selectNodeContents(document.getElementById('email'));
+      const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+    }
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+</script>

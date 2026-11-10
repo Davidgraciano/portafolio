@@ -1,0 +1,34 @@
+---
+import { imagesFor, imageSrc, type CaseStudy, type Lang } from '../data/site';
+
+interface Props { item: CaseStudy; lang: Lang; seed: number; eager?: boolean }
+const { item, lang, seed, eager = false } = Astro.props;
+const img = imagesFor(item)[0];
+
+// Sin capturas: la retícula de la marca, con el punto encendido en una posición distinta por caso.
+const cols = 10, rows = 6, step = 32;
+const dots: { x: number; y: number }[] = [];
+for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) dots.push({ x: 16 + i * step, y: 10 + j * step });
+const nodeCol = 3 + ((seed * 3) % 6);
+const nodeRow = 1 + (seed % 4);
+const nx = 16 + nodeCol * step, ny = 10 + nodeRow * step;
+const route = `M16 ${10 + 5 * step}H${16 + (nodeCol - 2) * step}V${ny + step}H${nx}V${ny + 4}`;
+---
+<div class="card-media" data-media>
+  {img ? (
+    <img
+      src={imageSrc(item, img)}
+      width={img.width}
+      height={img.height}
+      alt={img.alt[lang]}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  ) : (
+    <svg class="motif" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      {dots.map((d) => <rect class="dot" x={d.x - 2} y={d.y - 2} width="4" height="4" />)}
+      <path class="route" d={route} pathLength="1" />
+      <rect class="node" x={nx - 4} y={ny - 4} width="8" height="8" />
+    </svg>
+  )}
+</div>

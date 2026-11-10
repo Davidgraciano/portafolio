@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import CaseStudy from '../../components/CaseStudy.astro';
+import { cases, casePath, ui } from '../../data/site';
+
+export function getStaticPaths() {
+  return cases.map((item) => ({ params: { slug: item.slug.es }, props: { item } }));
+}
+const { item } = Astro.props;
+---
+<Base lang="es" altPath={casePath(item, 'en')} title={`${item.title.es} · David Graciano`} description={item.summary.es}>
+  <CaseStudy lang="es" item={item} />
+</Base>
